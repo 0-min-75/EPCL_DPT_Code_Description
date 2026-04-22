@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DPT 자동 분석 코드 상세 설명 (Rev.2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root {
+  --bg: #0a0c12;
+  --surface: #12151f;
+  --surface2: #181c2a;
+  --border: #252a3d;
+  --text: #dce0ed;
+  --text-dim: #7b839e;
+  --accent: #4f8ff7;
+  --cyan: #38d9a9;
+  --orange: #ffa94d;
+  --red: #ff6b6b;
+  --green: #51cf66;
+  --purple: #b197fc;
+  --yellow: #ffd43b;
+  --code-bg: #0d0f16;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); line-height:1.85; font-size:15px; }
+.container { max-width:1120px; margin:0 auto; padding:40px 24px 120px; }
+ 
+.hero { text-align:center; padding:64px 0 48px; border-bottom:1px solid var(--border); margin-bottom:56px; }
+.hero h1 { font-size:2.6em; font-weight:900; background:linear-gradient(135deg,var(--accent),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px; letter-spacing:-1px; }
+.hero .sub { color:var(--text-dim); font-size:1.05em; font-weight:300; }
+.hero .badge { display:inline-block; margin-top:14px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:4px 16px; font-size:.82em; color:var(--cyan); }
+ 
+.toc { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:28px 32px; margin-bottom:56px; }
+.toc h2 { font-size:1em; color:var(--cyan); margin-bottom:14px; text-transform:uppercase; letter-spacing:2.5px; font-weight:500; }
+.toc ol { padding-left:20px; } .toc li { margin-bottom:5px; }
+.toc a { color:var(--text); text-decoration:none; } .toc a:hover { color:var(--accent); }
+.toc ol ol { margin-top:4px; }
+ 
+section { margin-bottom:60px; }
+h2 { font-size:1.65em; font-weight:700; margin-bottom:18px; padding-bottom:8px; border-bottom:2px solid var(--accent); display:inline-block; }
+h3 { font-size:1.2em; font-weight:600; color:var(--cyan); margin:26px 0 10px; }
+h4 { font-size:1.02em; font-weight:600; color:var(--orange); margin:18px 0 6px; }
+p { margin-bottom:12px; }
+ 
+.new-tag { display:inline-block; background:var(--green); color:#000; font-size:.72em; font-weight:700; padding:1px 7px; border-radius:4px; margin-left:6px; vertical-align:middle; letter-spacing:.5px; }
+.changed-tag { display:inline-block; background:var(--yellow); color:#000; font-size:.72em; font-weight:700; padding:1px 7px; border-radius:4px; margin-left:6px; vertical-align:middle; letter-spacing:.5px; }
+ 
+code { font-family:'JetBrains Mono',monospace; background:var(--surface2); padding:1px 6px; border-radius:4px; font-size:.88em; color:var(--cyan); }
+pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px; padding:16px 20px; overflow-x:auto; margin-bottom:16px; font-family:'JetBrains Mono',monospace; font-size:.84em; line-height:1.7; color:#c8cee0; }
+ 
+table { width:100%; border-collapse:collapse; margin:14px 0 22px; font-size:.91em; }
+th { background:var(--surface2); color:var(--accent); font-weight:600; padding:10px 12px; text-align:left; border:1px solid var(--border); white-space:nowrap; }
+td { padding:8px 12px; border:1px solid var(--border); vertical-align:top; }
+tr:nth-child(even) td { background:var(--surface); }
+ 
+.info { background:var(--surface); border-left:4px solid var(--accent); border-radius:0 8px 8px 0; padding:14px 18px; margin:14px 0 18px; }
+.info.warn { border-left-color:var(--orange); }
+.info.ok { border-left-color:var(--green); }
+ 
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:22px; margin:18px 0; }
+.card h4 { margin-top:0; font-size:1.12em; }
+.formula { background:var(--code-bg); border-radius:8px; padding:14px 18px; margin:10px 0; text-align:center; overflow-x:auto; }
+ 
+.flow { display:flex; align-items:center; gap:10px; margin:18px 0; flex-wrap:wrap; }
+.flow-box { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:9px 16px; font-weight:500; font-size:.88em; text-align:center; min-width:110px; }
+.flow-box.hl { border-color:var(--accent); color:var(--accent); }
+.flow-box.new { border-color:var(--green); color:var(--green); }
+.flow-arr { color:var(--text-dim); font-size:1.3em; }
+ 
+.katex { font-size:1.08em; }
+.katex-display { margin:10px 0; overflow-x:auto; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <h1>DPT 자동 분석 코드 상세 설명</h1>
+  <p class="sub">Double Pulse Test — SiC MOSFET / Si-IGBT 스위칭 성능 자동 추출 시스템</p>
+</div>
+
+<nav class="toc">
+  <h2>목차</h2>
+  <ol>
+    <li><a href="#s1">전체 구조 개요</a></li>
+    <li><a href="#s2">Main_DPT_Analysis.m — 메인 스크립트</a></li>
+    <li><a href="#s3">Import_Waveform_Data.m — 파형 데이터 불러오기</a></li>
+    <li><a href="#s4">Extract_Switching_Metrics.m — 스위칭 지표 추출</a>
+      <ol>
+        <li><a href="#s4-1">전처리 및 기준 시각 탐지</a></li>
+        <li><a href="#s4-2">t_on_mid 산출</a></li>
+        <li><a href="#s4-3">E_on / E_off — 스위칭 손실</a></li>
+        <li><a href="#s4-4">t_d_on / t_d_off — 딜레이 타임</a></li>
+        <li><a href="#s4-5">전류 및 전압 Rise / Fall 타임</a></li>
+        <li><a href="#s4-6">I_peak_on / V_peak_off — 오버슈트</a></li>
+        <li><a href="#s4-7">Q_rr — 역회복 전하량</a></li>
+        <li><a href="#s4-8">f_ringing / ζ — 링잉 주파수 및 감쇠비</a></li>
+        <li><a href="#s4-9">V_on_drop — 도통 전압 강하</a></li>
+        <li><a href="#s4-10">I_out_actual — 출력 전류</a></li>
+        <li><a href="#s4-11">Crossing 탐지 함수 구조</a></li>
+      </ol>
+    </li>
+    <li><a href="#s5">Export_to_Simulink.m — 결과 저장</a></li>
+    <li><a href="#s6">Plot_LUT_Maps.m — Look-Up Table 도시</a></li>
+    <li><a href="#s7">추출 지표 요약</a></li>
+  </ol>
+</nav>
+
+<!-- ===== 1. OVERVIEW ===== -->
+<section id="s1">
+<h2>1. 전체 구조 개요</h2>
+<p>SiC MOSFET 또는 Si-IGBT의 <strong>Double Pulse Test(DPT)</strong> 파형을 자동 분석하여 스위칭 성능 지표를 추출하는 MATLAB 코드로, 총 <strong>5개 파일</strong>로 구성</p>
+
+<div class="flow">
+  <div class="flow-box hl">Main_DPT_Analysis.m<br><small>메인 스크립트</small></div>
+  <div class="flow-arr">→</div>
+  <div class="flow-box">Import_Waveform_Data.m<br><small>파형 로딩 & 전처리</small></div>
+  <div class="flow-arr">→</div>
+  <div class="flow-box">Extract_Switching_Metrics.m<br><small>지표 계산</small></div>
+  <div class="flow-arr">→</div>
+  <div class="flow-box">Export_to_Simulink.m<br><small>LUT 생성 & 저장</small></div>
+  <div class="flow-arr">→</div>
+  <div class="flow-box new">Plot_LUT_Maps.m<br><small>2D LUT 도시</small></div>
+</div>
+
+<h3>채널 별 측정 변수</h3>
+<table>
+<tr><th>채널</th><th>SiC MOSFET</th><th>IGBT</th><th>그룹</th></tr>
+<tr><td>C1 / Z1</td><td>I_D (드레인 전류)</td><td>I_C (콜렉터 전류)</td><td>전류</td></tr>
+<tr><td>C2 / Z2</td><td>I_out (출력 전류)</td><td>I_out</td><td>전류</td></tr>
+<tr><td>C3 / Z3</td><td>V_DS (드레인-소스 전압)</td><td>V_CE (콜렉터-이미터 전압)</td><td>전압</td></tr>
+<tr><td>C4 / Z4</td><td>V_GS (게이트-소스 전압)</td><td>V_GE (게이트-이미터 전압)</td><td>전압</td></tr>
+</table>
+
+</section>
+
+<!-- ===== 1.5 CONFIG PARAMETERS (TOGGLE) ===== -->
+<section id="s-config">
+<h3>설정 파라미터 총정리</h3>
+<p>5개 파일에서 사용자가 직접 설정하거나 조정할 수 있는 모든 값</p>
+ 
+<div class="info">
+<strong>범례:</strong>
+<span class="tag tag-config">CONFIG</span> CONFIG 구조체를 통해 전달되는 설정값 &nbsp;
+<span class="tag tag-const">CONST</span> 함수 내부 하드코딩 상수 &nbsp;
+<span class="tag tag-ui">UI</span> 플롯/출력 관련 설정
+</div>
+ 
+<style>
+.tag { display:inline-block; font-size:.7em; font-weight:700; padding:1px 7px; border-radius:4px; vertical-align:middle; margin-left:4px; letter-spacing:.4px; }
+.tag-config { background:var(--accent); color:#fff; }
+.tag-const { background:var(--purple,#b197fc); color:#fff; }
+.tag-ui { background:var(--orange); color:#000; }
+details.cfg { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+details.cfg[open] { border-color:var(--accent); }
+details.cfg summary { display:flex; align-items:center; gap:10px; padding:13px 20px; background:var(--surface); cursor:pointer; font-weight:600; font-size:1.02em; list-style:none; user-select:none; }
+details.cfg summary:hover { background:var(--surface2); }
+details.cfg summary::-webkit-details-marker { display:none; }
+details.cfg summary::before { content:'▶'; font-size:.68em; color:var(--accent); transition:transform .2s; flex-shrink:0; }
+details.cfg[open] summary::before { transform:rotate(90deg); }
+details.cfg summary .cnt { margin-left:auto; font-size:.76em; font-weight:400; color:var(--text-dim); background:var(--surface2); padding:2px 10px; border-radius:12px; }
+details.cfg .tbody-wrap { overflow-x:auto; }
+details.cfg table { width:100%; border-collapse:collapse; font-size:.87em; min-width:820px; }
+details.cfg thead th { background:var(--surface2); color:var(--accent); font-weight:600; padding:9px 13px; text-align:left; border-bottom:2px solid var(--border); white-space:nowrap; }
+details.cfg tbody td { padding:8px 13px; border-bottom:1px solid var(--border); vertical-align:top; }
+details.cfg tbody tr:nth-child(even) td { background:rgba(255,255,255,.015); }
+details.cfg tbody tr:hover td { background:rgba(79,143,247,.06); }
+.filecol { font-family:'JetBrains Mono',monospace; font-size:.82em; color:var(--orange); white-space:nowrap; }
+/* nested toggle */
+details.cfg details.sub { margin:0; border:none; border-top:1px solid var(--border); border-radius:0; }
+details.cfg details.sub summary { padding:9px 20px 9px 36px; font-size:.93em; background:transparent; }
+details.cfg details.sub summary::before { font-size:.58em; }
+</style>
+ 
+<!-- ── 1. 메인 설정 ── -->
+<details class="cfg" open>
+  <summary>📁 메인 설정 — 실험 환경 정의 <span class="cnt">8개</span></summary>
+  <div class="tbody-wrap"><table>
+  <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+  <tbody>
+  <tr><td><code>CONFIG.device_type</code> <span class="tag tag-config">CONFIG</span></td><td><code>'SiC-MOSFET'</code></td><td>디바이스 타입. <code>'SiC-MOSFET'</code> 또는 <code>'Si-IGBT'</code></td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>R_G</code></td><td><code>'Designed'</code></td><td>게이트 저항 식별 문자열. 경로 및 파일명 조합에 사용</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.excel_file</code> <span class="tag tag-config">CONFIG</span></td><td><code>'SiC_Fast_{R_G}/...DPT.xlsx'</code></td><td>동작점 조건 Excel 파일 경로. R_G로 자동 조합</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.data_folder</code> <span class="tag tag-config">CONFIG</span></td><td><code>'SiC_Fast_{R_G}/Raw_Data'</code></td><td>오실로스코프 Raw Data 폴더 경로</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.output_folder</code> <span class="tag tag-config">CONFIG</span></td><td><code>'SiC_Fast_{R_G}/Results'</code></td><td>결과 출력 폴더 (.mat, .xlsx, 디버그 플롯)</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.mat_filename</code> <span class="tag tag-config">CONFIG</span></td><td><code>'..._LUT.mat'</code></td><td>Simulink LUT용 .mat 출력 파일명</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.xlsx_filename</code> <span class="tag tag-config">CONFIG</span></td><td><code>'..._Metrics.xlsx'</code></td><td>결과 요약 .xlsx 출력 파일명</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.file_ext</code> <span class="tag tag-config">CONFIG</span></td><td><code>'.dat'</code></td><td>오실로스코프 파형 파일 확장자</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  </tbody></table></div>
+</details>
+ 
+<!-- ── 2. 분석 파라미터 ── -->
+<details class="cfg">
+  <summary>⚙️ 분석 파라미터 — 임계값 / 필터 <span class="cnt">4개</span></summary>
+  <div class="tbody-wrap"><table>
+  <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+  <tbody>
+  <tr><td><code>CONFIG.filter_window</code> <span class="tag tag-config">CONFIG</span></td><td><code>5</code></td><td>이동 평균 필터 윈도우 크기 [포인트 수]</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.threshold_low</code> <span class="tag tag-config">CONFIG</span></td><td><code>0.10</code></td><td>10% 임계값 (Rise/Fall, Delay 하한)</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.threshold_high</code> <span class="tag tag-config">CONFIG</span></td><td><code>0.90</code></td><td>90% 임계값 (Rise/Fall, Delay 상한)</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.ringing_min_peaks</code> <span class="tag tag-config">CONFIG</span></td><td><code>3</code></td><td>링잉 주파수 계산 최소 피크 수. 미달 시 NaN.</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  </tbody></table></div>
+</details>
+ 
+<!-- ── 3. 디버깅용 Plot 관련 ── -->
+<details class="cfg">
+  <summary>🖥️ 디버깅용 Plot 설정 <span class="cnt">3개</span></summary>
+  <div class="tbody-wrap"><table>
+  <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+  <tbody>
+  <tr><td><code>CONFIG.debug_plot</code> <span class="tag tag-config">CONFIG</span></td><td><code>true</code></td><td>디버그 파형 플롯 표시 여부 (true:표시 / false:미표시)</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.debug_conditions</code> <span class="tag tag-config">CONFIG</span></td><td><code>'all'</code></td><td>플롯 대상. <code>'all'</code> 또는 <code>[V1,I1; V2,I2; ...]</code> 행렬</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  <tr><td><code>CONFIG.save_debug_plots</code> <span class="tag tag-config">CONFIG</span></td><td><code>true</code></td><td>디버그 플롯(.fig) 자동 저장 여부 (true:저장 / false: 저장 안 함)<br>저장 경로: <code>{output}/Debug_Plots/</code></td><td class="filecol">Main_DPT_Analysis.m</td></tr>
+  </tbody></table></div>
+</details>
+ 
+<!-- ── 4. Import 상수 ── -->
+<details class="cfg">
+  <summary>📥 Import 내부 상수 <span class="cnt">1개</span></summary>
+  <div class="tbody-wrap"><table>
+  <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+  <tbody>
+  <tr><td><code>DESKEW_SEC</code> <span class="tag tag-const">CONST</span></td><td><code>10e-9</code> (10 ns)</td><td>전류 채널 Deskew 보정. 양수(+)값 → 전류를 뒤로 이동.</td><td class="filecol">Import_Waveform_Data.m</td></tr>
+  </tbody></table></div>
+</details>
+ 
+<!-- ── 5. Extract 상수 ── -->
+<details class="cfg">
+  <summary>📐 Extract 내부 상수 — 지표 계산 파라미터 <span class="cnt">13개</span></summary>
+  <div class="tbody-wrap">
+ 
+  <!-- 5-1 에너지 -->
+  <details class="sub">
+    <summary>Switching loss 적분 임계값 관련 (E_on / E_off)</summary>
+    <div class="tbody-wrap"><table>
+    <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+    <tbody>
+    <tr><td><code>I_on_start_abs</code> <span class="tag tag-const">CONST</span></td><td><code>I_DS × 0.05</code></td><td>E_on 시작: I_D ≥ 설정값</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td><code>V_off_abs</code> <span class="tag tag-const">CONST</span></td><td><code>V_DS_ref × 0.05</code></td><td>E_on 종료(V_DS ≤) / E_off 시작(V_DS ≥)</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td><code>I_off_end_abs</code> <span class="tag tag-const">CONST</span></td><td><code>I_DS × 0.05</code></td><td>E_off 종료: I_D ≤ 설정값</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    </tbody></table></div>
+  </details>
+ 
+  <!-- 5-2 기준값 윈도우 -->
+  <details class="sub">
+    <summary>Reference값 결정 구간 관련</summary>
+    <div class="tbody-wrap"><table>
+    <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+    <tbody>
+    <tr><td><code>PRE_TON_WINDOW</code> <span class="tag tag-const">CONST</span></td><td><code>500e-9</code> (500 ns)</td><td>V_DS_ref 결정: 턴온 직전 이 시간의 Z_V_DS 평균</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td><code>PRE_OFF_WINDOW</code> <span class="tag tag-const">CONST</span></td><td><code>300e-9</code> (300 ns)</td><td>I_DS_peak_off 결정: t_toff_ref 직전 이 시간의 Z_I_D 평균</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td>I_out_actual 윈도우 <span class="tag tag-const">CONST</span></td><td><code>200e-9</code> (200 ns)</td><td>실측 출력 전류: t_toff_ref 직전 200ns Z_I_out_f 평균</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td>t_on_mid 비율 <span class="tag tag-const">CONST</span></td><td><code>0.5</code></td><td>t_on_mid = t_ID_10r + (t_zoom_end − t_ID_10r) × 0.5</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    </tbody></table></div>
+  </details>
+ 
+  <!-- 5-3 피크/Q_rr -->
+  <details class="sub">
+    <summary>Overshoot / Q_rr 관련</summary>
+    <div class="tbody-wrap"><table>
+    <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+    <tbody>
+    <tr><td>I_peak_on 구간 <span class="tag tag-const">CONST</span></td><td><code>2e-6</code> (2 μs)</td><td>t_ton_ref ~ +2μs 구간 max(Z_I_D_f)</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td>V_peak_off 구간 <span class="tag tag-const">CONST</span></td><td><code>2e-6</code> (2 μs)</td><td>t_toff_ref ~ +2μs 구간 max(Z_V_DS_f)</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td>Q_rr 탐색 구간 <span class="tag tag-const">CONST</span></td><td><code>3e-6</code> (3 μs)</td><td>t_ID_90r ~ +3μs 구간 역회복 전류 탐색</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    </tbody></table></div>
+  </details>
+ 
+  <!-- 5-4 링잉/V_on_drop -->
+  <details class="sub">
+    <summary>Ringing / V_on_drop 관련</summary>
+    <div class="tbody-wrap"><table>
+    <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+    <tbody>
+    <tr><td><code>RING_WINDOW</code> <span class="tag tag-const">CONST</span></td><td><code>400e-9</code> (400 ns)</td><td>링잉 주파수/감쇠비 탐색 구간 (t2_on/t2_off 이후)</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td><code>T_RINGING_SETTLE</code> <span class="tag tag-const">CONST</span></td><td><code>500e-9</code> (500 ns)</td><td>V_on_drop 측정 시 링잉 소멸 여유 시간</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    </tbody></table></div>
+  </details>
+ 
+  <!-- 5-5 예약 -->
+  <details class="sub">
+    <summary>예외: V_threshold</summary>
+    <div class="tbody-wrap"><table>
+    <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+    <tbody>
+    <tr><td><code>VGS_THRESHOLD</code> <span class="tag tag-const">CONST</span></td><td><code>3.9</code> [V]</td><td>턴온/턴오프 기준 시각을 게이트 전압 절대값 기준으로 설정 시 사용 가능한 변수로, 현재 미사용 (50% 지점 사용 중) <span class="new-tag">사용 가능</span></td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    </tbody></table></div>
+  </details>
+ 
+  </div>
+</details>
+ 
+<!-- ── 6. LUT Map ── -->
+<details class="cfg">
+  <summary>📊 LUT Map 도시 설정 <span class="cnt">4개</span></summary>
+  <div class="tbody-wrap"><table>
+  <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
+  <tbody>
+  <tr><td><code>PLOT_INDIVIDUAL</code> <span class="tag tag-ui">UI</span></td><td><code>true</code></td><td>false: 통합 Figure만 생성 / true: 지표별 Figure도 추가 생성</td><td class="filecol">Plot_LUT_Maps.m</td></tr>
+  <tr><td>보간 격자 해상도 <span class="tag tag-const">CONST</span></td><td><code>80 × 80</code></td><td>scatteredInterpolant 보간용 정규 격자 (X/Y 각 80점)</td><td class="filecol">Plot_LUT_Maps.m</td></tr>
+  <tr><td>통합 Figure 열 수 <span class="tag tag-ui">UI</span></td><td><code>4</code></td><td>통합 Figure subplot 열 수. 행 = ceil(지표수 / 4)</td><td class="filecol">Plot_LUT_Maps.m</td></tr>
+  <tr><td><code>metrics_def</code> 등고선 수 <span class="tag tag-ui">UI</span></td><td><code>6~8</code></td><td>지표별 Map에 등고선을 몇 개 넣을지 설정 (현재: 손실=8개, 나머지=6개)</td><td class="filecol">Plot_LUT_Maps.m</td></tr>
+  </tbody></table></div>
+</details>
+ 
+<div class="info" style="margin-top:8px;">
+<strong>참고:</strong> <span class="tag tag-config">CONFIG</span>는 Main 상단에서 설정 시 모든 모듈에 자동 전달, <span class="tag tag-const">CONST</span>는 해당 파일 내부 하드코딩이므로 직접 편집 필요
+</div>
+ 
+</section>
+
+<!-- ===== 2. MAIN ===== -->
+<section id="s2">
+<h2>2. Main_DPT_Analysis.m</h2>
+<p>전체 분석 흐름을 관장하는 메인 스크립트</p>
+
+<h3>CONFIG 구성 </h3>
+<p>게이트 저항값 변수 <code>R_G</code>를 도입하여 경로를 동적으로 생성. 예를 들어 <code>R_G = 'Designed'</code>이면 <code>SiC_Slow_Designed/Raw_Data</code> 등의 경로가 자동 조합됨.</p>
+
+<h3>STEP 1: Excel 조건 파일 읽기</h3>
+<p>CONFIG 구조체에 정의된 Excel 파일(예: <code>SiC_Fast_Designed_DPT.xlsx</code>)의 3행부터 데이터를 읽음. 열 구조는 다음과 같음.</p>
+<table>
+<tr><th>열</th><th>내용</th><th>예시</th></tr>
+<tr><td>A</td><td>V_DC [V] — 버스 전압</td><td>400</td></tr>
+<tr><td>B</td><td>I_DS [A] — 설정 드레인 전류</td><td>200</td></tr>
+<tr><td>C</td><td>첫 번째 펄스 듀티</td><td>—</td></tr>
+<tr><td>D</td><td>두 번째 펄스 듀티</td><td>—</td></tr>
+<tr><td>E</td><td>이미지 번호</td><td>—</td></tr>
+<tr><td>F</td><td>파형 파일 번호 (정수)</td><td>3 → '00003'</td></tr>
+</table>
+<p>F열의 정수를 <code>sprintf('%05d')</code>로 5자리 zero-padding하여, 하나의 동작점에 속하는 8개 파형 파일(C1~C4, Z1~Z4)의 파일명을 결정</p>
+
+<h3>STEP 2: 동작점 순회</h3>
+<p>각 동작점(행)에 대해 <code>Import_Waveform_Data</code>로 8채널 데이터를 로드하고, <code>Extract_Switching_Metrics</code>로 스위칭 지표를 추출한 뒤, 결과 구조체 <code>results</code>에 저장. 실패 시 <code>warning</code>을 출력하고 해당 동작점은 NaN으로 남김.</p>
+
+<h3>STEP 3: 결과 저장</h3>
+<p><code>Export_to_Simulink</code>을 호출하여 .mat(Simulink LUT)과 .xlsx(요약 테이블)을 생성</p>
+
+<h3>STEP 4: 2D LUT Map 도시</h3>
+<p><code>Plot_LUT_Maps(results, CONFIG)</code>을 호출하여 모든 지표의 2D 보간 맵을 생성</p>
+
+</section>
+
+<!-- ===== 3. IMPORT ===== -->
+<section id="s3">
+<h2>3. Import_Waveform_Data.m</h2>
+<p>오실로스코프 Raw Data를 파싱하고 전처리하는 모듈</p>
+
+<h3>3.1 파일 로딩</h3>
+<p>파일명 규칙: <code>{채널}--Trace--{file_num_str}{확장자}</code> (예: <code>C1--Trace--00003.dat</code>). 8개 채널을 순차적으로 읽음. <br> 내부 함수 <code>read_oscilloscope_file</code>은 헤더 줄 수가 파일마다 달라도 자동으로 첫 번째 숫자 행을 탐지하여 (Time, Value) 2열 데이터를 추출</p>
+
+<h3>3.2 Deskew 보정<span class="new-tag">변경 가능</span></h3>
+<p>전류 채널(C1/Z1, C2/Z2)의 시간축을 +10ns 이동 (오실로스코프의 Deskew 오설정을 보상하기 위함.)
+  <br> → <strong>오설정 수정</strong> 또는 <strong>미설정 보완</strong> 용도로 사용 가능 </p>
+
+<h3>3.3 채널 동기화</h3>
+<p>4개의 C채널과 4개의 Z채널을 각각 그룹 내에서 공통 시간 벡터로 보간함. 모든 채널의 겹치는 시간 범위를 계산한 뒤, <br> 포인트 수가 가장 많은 채널의 시간 벡터를 기준으로 <code>interp1(linear)</code> 보간을 수행.</p>
+
+<h3>3.4 출력 구조체</h3>
+<p><code>wave</code> 구조체에 <code>t_full</code>, <code>I_D</code>, <code>V_DS</code>, <code>V_GS</code>, <code>I_out</code> (C채널) 및 <code>t_zoom</code>, <code>Z_I_D</code>, <code>Z_V_DS</code>, <code>Z_V_GS</code>, <code>Z_I_out</code> (Z채널)을 담아 반환.
+  <br> IGBT 모드에서는 I_C, V_CE 등의 별칭도 추가됨. <code>meta</code> 구조체에는 샘플링 주파수, 타임스텝, 포인트 수 등 메타 정보가 담김.</p>
+</section>
+
+<!-- ===== 4. EXTRACT ===== -->
+<section id="s4">
+<h2>4. Extract_Switching_Metrics.m — 스위칭 지표 추출</h2>
+<p>Z채널 고해상도 파형으로부터 <strong>18가지 스위칭 성능 지표</strong>를 추출하는 핵심 모듈</p>
+
+<!-- 4.1 -->
+<section id="s4-1">
+<h3>4.1 전처리 및 기준 시각 탐지</h3>
+<h4>이동 평균 필터링</h4>
+<p>Z채널의 4개 신호(Z_I_D, Z_V_DS, Z_V_GS, Z_I_out)에 <code>movmean(signal, 5)</code> 필터를 적용</p>
+
+<h4>정규화</h4>
+<div class="card">
+  <div class="formula">$$Z_\text{ID,norm} = \frac{Z\_I\_D_f}{I_{DS}}, \qquad Z_\text{VGS,norm} = \frac{Z\_V\_GS_f - \min(Z\_V\_GS_f)}{\max(Z\_V\_GS_f) - \min(Z\_V\_GS_f)}$$</div>
+</div>
+
+<h4>t_ton_ref — 턴온 기준 시각</h4>
+<p>Z_VGS_norm이 50% 지점을 처음으로 상향 통과하는 시점(선형 보간)</p>
+
+<h4>t_toff_ref — 턴오프 기준 시각</h4>
+<p>t_on_mid 이후의 Z_VGS_norm에서 50% 지점을 처음으로 하향 통과하는 시점</p>
+
+<h4>V_DS_ref — 실측 버스 전압</h4>
+<p>턴온 직전 500ns 구간의 Z_V_DS_f 평균. 이후 V_DS 정규화 및 에너지 임계값(5%)이 갱신됨.</p>
+<div class="card">
+  <div class="formula">$$V_{DS,\text{ref}} = \text{mean}\!\left(Z\_V\_DS_f\big|_{t \in [t_\text{ton,ref}-500\text{ns},\; t_\text{ton,ref})}\right), \qquad Z_\text{VDS,norm} = \frac{Z\_V\_DS_f}{V_{DS,\text{ref}}}$$</div>
+</div>
+</section>
+
+<!-- 4.2 -->
+<section id="s4-2">
+<h3>4.2 t_on_mid — 턴온/턴오프 분리 경계</h3>
+<p>두 번째 펄스에서 턴온과 턴오프의 분리 기준이 되는 지점을 의미(on 구간의 중간 지점). 링잉 구간에서의 오탐을 방지하기 위해 2단계 방식으로 경계를 산출</p>
+<div class="card">
+  <h4>Step 1: t_ID_10r 탐지</h4>
+  <p>t_ton_ref − 500ns 이후 Z_ID_norm이 처음으로 10%를 통과하는 시점.</p>
+
+  <h4>Step 2: t_on_mid 계산</h4>
+  <div class="formula">$$t_\text{on\_mid} = t_\text{ID,10r} + \bigl(t_\text{zoom,end} - t_\text{ID,10r}\bigr) \times 0.5$$</div>
+  <p>Z채널 후반부의 절반 지점으로, ON 상태 평탄 구간 내부에 위치. 이 시점 이후에서만 턴오프 관련 탐색을 수행하여 턴온 링잉 구간의 오탐을 방지.</p>
+</div>
+
+<h4>I_DS_peak_off — 턴오프 전류 기준 </h4>
+<strong>t_toff_ref 직전 300ns 구간의 평균값(mean)</strong>을 사용. 이는 턴온 오버슈트가 소멸된 후 안정화된 전류를 정확하게 반영함.
+<div class="card">
+  <div class="formula">$$I_{DS,\text{peak\_off}} = \text{mean}\!\left(Z\_I\_D_f\big|_{t \in [t_\text{toff,ref}-300\text{ns},\; t_\text{toff,ref})}\right)$$</div>
+</div>
+</section>
+
+<!-- 4.3 -->
+<section id="s4-3">
+<h3>4.3 E_on / E_off — 스위칭 손실</h3>
+
+<div class="card">
+  <h4>E_on</h4>
+  <p>t_ton_ref 이후의 Z채널에서:</p>
+  <table>
+  <tr><th>경계</th><th>조건</th><th>설명</th></tr>
+  <tr><td>t1 (시작)</td><td>$$Z\_I\_D_f \geq I_{DS} \times 5\%$$</td><td>전류가 설정값의 5%에 도달하는 시점</td></tr>
+  <tr><td>t2 (종료)</td><td>$$Z\_V\_DS_f \leq V_{DS,\text{ref}} \times 5\%$$</td><td>전압이 실측 버스전압의 5%까지 하강한 시점</td></tr>
+  </table>
+  <p>t2에 해당하는 크로싱이 없으면(전압이 완전히 내려가지 않는 경우), Z_V_DS_f의 최소값 위치를 t2로 사용.</p>
+  <div class="formula">
+    $$E_\text{on} = \left|\int_{t_1}^{t_2} V_{DS}(t) \cdot I_D(t)\, dt\right|$$
+  </div>
+  <p>적분에는 <strong>원본(비필터) 신호</strong> Z_V_DS, Z_I_D를 사용하며, MATLAB <code>trapz</code> (사다리꼴 적분)로 계산. 결과 단위는 [J]이며, 출력 시 [mJ]로 환산됨.</p>
+</div>
+<div class="card">
+  <h4>E_off</h4>
+  <p>턴온과 턴오프 사이 중간 시점(t_mid)부터 탐색을 시작</p>
+  <div class="formula">
+    $$t_\text{mid} = \frac{t_\text{ton,ref} + t_\text{toff,ref}}{2}$$
+  </div>
+  <table>
+  <tr><th>경계</th><th>조건</th><th>설명</th></tr>
+  <tr><td>t1 (시작)</td><td>$$Z\_V\_DS_f \geq V_{DS,\text{ref}} \times 5\%$$</td><td>전압이 버스전압의 5%까지 상승하는 시점 (t_mid 이후)</td></tr>
+  <tr><td>t2 (종료)</td><td>$$Z\_I\_D_f \leq I_{DS} \times 5\%$$</td><td>전류가 설정값의 5% 이하로 하강하는 시점</td></tr>
+  </table>
+  <div class="formula">
+    $$E_\text{off} = \left|\int_{t_1}^{t_2} V_{DS}(t) \cdot I_D(t)\, dt\right|$$
+  </div>
+  <p>E_on과 동일하게 원본 신호 기반 사다리꼴 적분 수행</p>
+</div>
+</section>
+
+<!-- 4.4 -->
+<section id="s4-4">
+<h3>4.4 t_d_on / t_d_off — 딜레이 타임</h3>
+
+<div class="card">
+  <h4>t_d_on (턴-온 딜레이)</h4>
+  <p>: 게이트 전압이 10% 상승하는 시점부터 드레인 전류가 10% 상승하는 시점까지의 시간 차이</p>
+  <div class="formula">
+    $$t_{d,\text{on}} = t_\text{ID,10r} - t_\text{VGS,10r}$$
+  </div>
+  <table>
+  <tr><th>시점</th><th>정의</th><th>탐색 시작점</th></tr>
+  <tr><td>t_VGS_10r</td><td>Z_VGS_norm이 10%를 통과</td><td>t_ton_ref − 500ns</td></tr>
+  <tr><td>t_ID_10r</td><td>Z_ID_norm이 10%를 통과 (I_DS 기준)</td><td>t_ton_ref − 500ns</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h4>t_d_off (턴-오프 딜레이)</h4>
+  <p>: 게이트 전압이 90%에서 하강하는 시점부터 드레인-소스 전압이 10% 상승하는 시점까지의 시간 차이</p>
+  <div class="formula">
+    $$t_{d,\text{off}} = t_\text{VDS,10r} - t_\text{VGS,90f}$$
+  </div>
+  <p>t_VGS_90f는 <code>find_crossing_bwd</code>(역방향 탐색)로 t_toff_ref + 500ns에서 <strong>뒤에서부터</strong> 탐색</p>
+  <table>
+  <tr><th>시점</th><th>정의</th><th>탐색 시작점</th></tr>
+  <tr><td>t_VGS_90f</td><td>Z_VGS_norm이 90%를 통과</td><td>t_toff_ref + 500ns</td></tr>
+  <tr><td>t_VDS_10r</td><td>Z_VDS_norm이 10%를 통과 (V_DS_ref 기준)</td><td>t_ton_ref − 500ns</td></tr>
+  </table>
+</div>
+</section>
+
+<!-- 4.5 -->
+<section id="s4-5">
+<h3>4.5 전류 및 전압 Rise / Fall 타임</h3>
+<div class="info">
+<strong>기준값:</strong> 턴온 전류 기준 = I_DS(설정값), 턴오프 전류 기준 = I_DS_peak_off(실측 평균). 전압 기준 = V_DS_ref(실측 버스 전압).
+</div>
+
+<div class="card">
+  <h4>t_r_I — 턴온 전류 상승 시간</h4>
+  <p>I_D가 I_DS의 10%에서 90%까지 상승하는 데 걸리는 시간</p>
+  <div class="formula">$$t_{r,I} = t_\text{ID,90r} - t_\text{ID,10r} \quad \text{(탐색 구간: [t\_ID\_10r, t\_on\_mid])}$$</div>
+  <p>* t_ID_10r은 t_ton_ref - 500ns 이후 순방향 탐색</p>
+  <p>* t_ID_90r는 t_ID_10r <strong>이후</strong> 순방향 탐색</p>
+</div>
+<div class="card">
+  <h4>t_f_V — 턴온 전압 하강 시간</h4>
+  V_DS가 V_DS_ref의 90%에서 10%까지 하강하는 데 걸리는 시간
+  <div class="formula">$$t_{f,V} = t_\text{VDS,10f} - t_\text{VDS,90f}$$</div>
+  <p>* t_VDS_90f은 t_ton_ref - 500ns 이후 순방향 탐색</p>
+  <p>* t_VDS_10f는 t_VDS_90f <strong>이후</strong> 순방향 탐색</p>
+</div>
+<div class="card">
+  <h4>t_r_V — 턴오프 전압 상승 시간 </h4>
+  <p>V_DS가 V_DS_ref의 10%에서 90%까지 상승하는 데 걸리는 시간</p>
+  <div class="formula">$$t_{r,V} = t_\text{VDS,90r} - t_\text{VDS,10r}$$</div>
+  <p>* t_VDS_10r은 t_toff_ref - 500ns 이후 순방향 탐색</p>
+  <p>* t_VDS_90r는 t_VDS_10r <strong>이후</strong> 순방향 탐색</p>
+</div>
+<div class="card">
+  <h4>t_f_I — 턴오프 전류 하강 시간 </h4>
+  <p>I_D가 I_DS_peak_off의 90%에서 10%까지 하강하는 데 걸리는 시간</p>
+  <div class="formula">$$t_{f,I} = t_\text{ID,10f} - t_\text{ID,90f}$$</div>
+  <p>* t_ID_90f는 데이터의 뒷 부분부터 역방향으로 탐색(<code>find_crossing_bwd</code>)하여 턴오프 이전 데이터와 관계 없이 실제 하강 시작점을 정확히 포착</p>
+  <p>* t_ID_10f는 t_ID_90f <strong>이후</strong> 순방향 탐색</p>
+  <div class="formula">$$Z_\text{ID,off,norm} = \frac{Z\_I\_D_f}{I_{DS,\text{peak\_off}}}$$</div>
+</div>
+</section>
+
+<!-- 4.6 -->
+<section id="s4-6">
+<h3>4.6 I_peak_on / V_peak_off — 피크값</h3>
+<div class="card">
+  <h4>I_peak_on — 턴온 전류 오버슈트</h4>
+  <p>t_ton_ref 이후 2μs 이내 구간에서 Z_I_D_f의 최대값. 역회복 전류(reverse recovery current)에 의한 전류 스파이크를 포착</p>
+  <div class="formula">
+    $$I_\text{peak,on} = \max\!\left(Z\_I\_D_f\big|_{t \in [t_\text{ton,ref},\; t_\text{ton,ref}+2\mu s]}\right)$$
+  </div>
+</div>
+
+<div class="card">
+  <h4>V_peak_off — 턴오프 전압 오버슈트</h4>
+  <p>t_toff_ref 이후 2μs 이내 구간에서 Z_V_DS_f의 최대값. 기생 인덕턴스에 의한 전압 스파이크를 포착</p>
+  <div class="formula">
+    $$V_\text{peak,off} = \max\!\left(Z\_V\_DS_f\big|_{t \in [t_\text{toff,ref},\; t_\text{toff,ref}+2\mu s]}\right)$$
+  </div>
+
+  <h4>V_peak_off_pct — 오버슈트 비율</h4>
+  <div class="formula">
+    $$V_\text{peak,off,\%} = \left(\frac{V_\text{peak,off}}{V_{DS,\text{ref}}} - 1\right) \times 100\;\;[\%]$$
+  </div>
+  <p>예를 들어 10%이면 버스 전압의 110%까지 전압 스파이크가 발생한 것. (측정 되지만 따로 출력하고 있지는 않음.) <span class="new-tag">변경 가능</span></p>
+</div>
+</section>
+
+<!-- 4.7 Q_rr -->
+<section id="s4-7">
+<h3>4.7 Q_rr — 역회복 전하</h3>
+<div class="card">
+  <p>턴온 시 다이오드의 역회복(reverse recovery)으로 인해 I_D가 정상 상태 전류를 초과하는 구간의 전하량</p>
+
+  <h4>기준 전류 결정</h4>
+  <p>I_peak_on 시점의 <strong>Z_I_out_f 실측값</strong>을 기준 전류(I_out_qrr)로 사용. 설정값 I_DS가 아닌 실제 출력 전류를 사용하여 정확도를 높임.</p>
+
+  <h4>적분 구간</h4>
+  <p>t_ID_90r ~ (t_ID_90r + 3μs) 구간에서 I_peak_on 이후 I_D가 I_out_qrr 이하로 하강하는 시점(t_rr_end)까지, I_D > I_out_qrr인 구간만 적분</p>
+
+  <div class="formula">$$Q_{rr} = \left|\int_{t_\text{ID,90r}}^{t_\text{rr,end}} \bigl(I_D(t) - I_\text{out,qrr}\bigr)\, dt\right|, \quad I_D > I_\text{out,qrr}$$</div>
+
+  <p>원본(비필터) 신호 Z_I_D를 사용하며, I_out_qrr는 필터된 Z_I_out_f에서 추출. 결과 단위는 [C]이고, 출력 시 μC로 환산됨.</p>
+</div>
+</section>
+
+<!-- 4.8 Ringing & Damping -->
+<section id="s4-8">
+<h3>4.8 f_ringing / ζ — 링잉 주파수 및 감쇠비 </h3>
+
+<div class="info warn">
+① 전류가 아닌 <strong>전압</strong> 링잉을 기준으로 지표 추출<br>
+② 탐색 시작 시점: <strong>t2_on/t2_off</strong>(에너지 적분 종료 시점)<br>
+③ 탐색 구간: <strong>t2_on/t2_off</strong> 이후 400ns 동안<br>
+④ 감쇠비(ζ) 동시 계산
+</div>
+
+<div class="card">
+  <h4>f_ringing_on / f_ringing_off</h4>
+  <table>
+  <tr><th>지표</th><th>신호</th><th>구간</th></tr>
+  <tr><td>f_ringing_on</td><td>Z_V_DS_f</td><td>t2_on ~ t2_on + 400ns</td></tr>
+  <tr><td>f_ringing_off</td><td>Z_V_DS_f</td><td>t2_off ~ t2_off + 400ns</td></tr>
+  </table>
+
+  <p>1단계: DC 성분 제거 → AC 성분 추출</p>
+  <div class="formula">$$v_\text{AC}(t) = v_f(t) - \overline{v_f}$$</div>
+  <p>2단계: <code>findpeaks</code>로 피크 탐지 (MinPeakProminence = 진폭 × 10%)</p>
+  <div class="formula">$$f_\text{ringing} = \frac{1}{\overline{\Delta t_\text{peaks}}}$$</div>
+</div>
+
+<div class="card">
+  <h4>ζ (zeta) — 감쇠비</h4>
+  <p><strong>대수 감쇠율(Logarithmic Decrement)</strong> 방법으로 계산. 연속 피크 진폭의 비율에서 감쇠율을 추출.</p>
+
+  <div class="formula">$$\delta_k = \ln\!\left(\frac{A_k}{A_{k+1}}\right), \qquad \bar{\delta} = \text{mean}(\delta_k)$$</div>
+  <div class="formula">$$\zeta = \frac{\bar{\delta}}{\sqrt{4\pi^2 + \bar{\delta}^2}}$$</div>
+
+  <p>0 &lt; ζ &lt; 1 범위 내 유효한 값만 반환하고, 범위 밖이면 NaN 처리. 양수 피크가 2개 미만이면 음수 피크(극소값 절댓값)도 함께 사용.</p>
+</div>
+</section>
+
+<!-- 4.9 V_on_drop -->
+<section id="s4-9">
+<h3>4.9 V_on_drop — 도통 전압 강하</h3>
+<div class="metric-card">
+  <p>디바이스가 완전히 켜진 상태에서의 드레인-소스(또는 콜렉터-이미터) 전압 강하로, 디바이스의 온 저항(R_DS(on)) 특성을 나타냄.</p>
+
+  <h4>측정 구간</h4>
+  <p>E_on 적분 종료 시점(t2_on) 이후 링잉 소멸 여유 시간(500ns)을 두고, t_on_mid(ON 상태 중앙)까지의 구간에서 Z_V_DS의 평균을 취함.</p>
+  <div class="formula">$$V_\text{on,drop} = \text{mean}\!\left(Z\_V\_DS\big|_{t \in [t_{2,\text{on}}+500\text{ns},\; t_\text{on\_mid}]}\right)$$</div>
+  <p>이 구간이 너무 짧으면(데이터 10포인트 미만), t2_on ~ t_on_mid 전체 구간을 사용</p>
+
+  <div class="info-box green">
+    <strong>물리적 의미:</strong> $V_\text{on,drop} \approx I_{DS} \times R_{DS(\text{on})}$ 로, 도통 시 전압 강하를 의미
+  </div>
+  <p>→ 전류값에 따라 증가하는 경향을 보여야 하지만, 현재 전압에 비례하는 특성을 보이며 <strong>전체적으로 매우 큰 값</strong>(이론값의 최대 50배)이 측정되고 있음. <span class="changed-tag">검토 필요</span></p>
+</div>
+</section>
+
+<!-- 4.10 I_out_actual -->
+<section id="s4-10">
+<h3>4.10 I_out_actual — 실측 출력 전류</h3>
+<div class="card">
+  <p>턴오프 직전 200ns 구간의 Z_I_out_f 평균값. Plot_LUT_Maps에서 <strong>Y축(세로축)</strong>으로 사용됨.</p>
+  <div class="formula">$$I_\text{out,actual} = \text{mean}\!\left(Z\_I\_out_f\big|_{t \in [t_\text{toff,ref}-200\text{ns},\; t_\text{toff,ref})}\right)$$</div>
+  <p>설정값 I_DS 대신 실측값을 사용하므로, 인덕터 전류 상승에 의한 설정값과의 차이를 정확히 반영함.</p>
+</div>
+</section>
+
+<!-- 4.11 Crossing functions -->
+<section id="s4-11">
+<h3>4.11 Crossing 탐지 함수 구조 </h3>
+<div class="info">
+'교차(crossing)' 방식이 아닌,'도달(threshold reach)' 방식을 채택함으로써 신호가 이미 임계값 위/아래에 있는 경우에도 정상 탐지되도록 설정
+</div>
+<table>
+<tr><th>함수</th><th>탐색 방향</th><th>용도</th></tr>
+<tr><td><code>find_crossing_fwd</code></td><td>순방향 (t_after 이후 →)</td><td>대부분의 크로싱 탐지</td></tr>
+<tr><td><code>find_crossing_fwd_window</code></td><td>순방향 + 윈도우 상한</td><td>t_r_I (t_ID_90r 탐색 시 t_on_mid 상한 제한)</td></tr>
+<tr><td><code>find_crossing_bwd</code></td><td>역방향 (← t_before 이전)</td><td>t_VGS_90f, t_ID_90f 등 하강 시작점 탐색</td></tr>
+</table>
+<p>모든 함수는 선형 보간으로 서브-샘플 정밀도의 크로싱 시각을 계산</p>
+<div class="card">
+  <div class="formula">$$t_c = t_{i-1} + \frac{L - v_{i-1}}{v_i - v_{i-1}} \cdot (t_i - t_{i-1})$$</div>
+</div>
+</section>
+</section>
+
+<!-- ===== 5. EXPORT ===== -->
+<section id="s5">
+<h2>5. Export_to_Simulink.m</h2>
+<p>분석 결과를 .mat(Simulink LUT)과 .xlsx(요약)로 저장</p>
+
+<h3>5.1 2D LUT 매트릭스 구성</h3>
+<p>고유한 V_DC 값과 I_DS 값을 각각 열 벡터와 행 벡터로 추출한 뒤, 15가지 지표 각각에 대해 행=I_D, 열=V_DC인 2D 매트릭스를 구성. 해당 (V_DC, I_DS) 조합에 결과가 없으면 NaN으로 채움.</p>
+
+<h3>5.2 .mat 파일 저장</h3>
+<p>Simulink에서 바로 사용할 수 있도록 <code>V_DC_breakpoints</code>, <code>I_D_breakpoints</code>, <code>E_on_matrix</code> 등 개별 변수로도 저장. Simulink의 2-D Lookup Table 블록에서 Row → I_D_breakpoints, Column → V_DC_breakpoints, Table → 원하는 지표 매트릭스를 연결하면 됨.</p>
+
+<h3>5.3 Excel 파일 저장</h3>
+<p>한 Excel 파일 내에 두 종류의 시트가 생성됨.</p>
+<table>
+<tr><th>시트</th><th>내용</th><th>단위 환산</th></tr>
+<tr><td>Raw_Results</td><td>전체 동작점의 1차원 결과 테이블</td><td>E→mJ, t→ns, f→MHz 등</td></tr>
+<tr><td>E_on_mJ, E_off_mJ, ...</td><td>지표별 I_D × V_DC 2D LUT 매트릭스</td><td>지표별 적절한 단위</td></tr>
+</table>
+</section>
+
+<!-- ===== 6. PLOT_LUT_MAPS ===== -->
+<section id="s6">
+<h2>6. Plot_LUT_Maps.m</h2>
+<p>분석 결과를 2D 보간 맵으로 시각화하는 새로운 모듈</p>
+
+<div class="card">
+  <h4>축 정의</h4>
+  <table>
+  <tr><th>축</th><th>변수</th><th>설명</th></tr>
+  <tr><td>가로축 (X)</td><td>V_DS_ref_actual</td><td>턴온 직전 실측 버스 전압 [V]</td></tr>
+  <tr><td>세로축 (Y)</td><td>I_out_actual</td><td>턴오프 직전 실측 출력 전류 [A]</td></tr>
+  </table>
+  <p>설정값(V_DC, I_DS) 대신 <strong>실측값</strong>을 축으로 사용하여 실제 동작 조건을 정확히 반영</p>
+
+  <h4>보간 방식</h4>
+  <p><code>scatteredInterpolant</code>의 <strong>Natural Neighbor</strong> 방식을 사용. 비정형 격자에서도 C¹ 연속 보간이 가능하며, 측정점에서 정확히 측정값과 일치.
+    <br>볼록 껍질(convex hull) 외부는 NaN으로 처리됨.</p>
+
+  <h4>출력</h4>
+  <p>통합 Figure(모든 지표를 4열 서브플롯으로) + 개별 Figure(지표별)을 .fig 형식으로 저장.
+    <br>각 패널에는 pcolor 컬러맵, 등고선, 실측 데이터 포인트가 포함됨.</p>
+</div>
+</section>
+
+<!-- ===== 7. SUMMARY ===== -->
+<section id="s7">
+<h2>7. 지표 종합 요약 테이블</h2>
+<p>SiC_Fast_Designed_Metrics.xlsx의 Raw_Results 시트에 기록되는 18개 지표</p>
+
+<table>
+<tr><th>지표</th><th>단위</th><th>구간 / 기준</th><th>계산 방식</th></tr>
+<tr><td><strong>E_on</strong></td><td>mJ</td><td>I_D ≥ 5%I_DS → V_DS ≤ 5%V_ref</td><td>$$\left|\int V_{DS} \cdot I_D\, dt\right|$$</td></tr>
+<tr><td><strong>E_off</strong></td><td>mJ</td><td>V_DS ≥ 5%V_ref → I_D ≤ 5%I_DS</td><td>$$\left|\int V_{DS} \cdot I_D\, dt\right|$$</td></tr>
+<tr><td><strong>I_peak_on</strong></td><td>A</td><td>t_ton_ref ~ +2μs</td><td>max(Z_I_D_f)</td></tr>
+<tr><td><strong>V_peak_off</strong></td><td>V</td><td>t_toff_ref ~ +2μs</td><td>max(Z_V_DS_f)</td></tr>
+<tr><td><strong>V_peak_off_pct</strong></td><td>%</td><td>—</td><td>$$(V_\text{pk}/V_\text{ref} - 1) \times 100$$</td></tr>
+<tr><td><strong>t_d_on</strong></td><td>ns</td><td>V_GS 10%↑ → I_D 10%↑</td><td>$$t_\text{ID,10r} - t_\text{VGS,10r}$$</td></tr>
+<tr><td><strong>t_d_off</strong></td><td>ns</td><td>V_GS 90%↓ → V_DS 10%↑</td><td>$$t_\text{VDS,10r} - t_\text{VGS,90f}$$</td></tr>
+<tr><td><strong>t_r_I</strong></td><td>ns</td><td>턴온: I_D 10→90% (I_DS 기준)</td><td>$$t_\text{ID,90r} - t_\text{ID,10r}$$</td></tr>
+<tr><td><strong>t_f_V</strong></td><td>ns</td><td>턴온: V_DS 90→10% (V_ref 기준)</td><td>$$t_\text{VDS,10f} - t_\text{VDS,90f}$$</td></tr>
+<tr><td><strong>t_r_V</strong></td><td>ns</td><td>턴오프: V_DS 10→90% (V_ref 기준)</td><td>$$t_\text{VDS,90r} - t_\text{VDS,10r}$$</td></tr>
+<tr><td><strong>t_f_I</strong></td><td>ns</td><td>턴오프: I_D 90→10% (I_pk_off 기준)</td><td>$$t_\text{ID,10f} - t_\text{ID,90f}$$</td></tr>
+<tr><td><strong>f_ringing_on</strong></td><td>MHz</td><td>t2_on ~ +400ns, Z_V_DS</td><td>피크 간격 역수</td></tr>
+<tr><td><strong>f_ringing_off</strong></td><td>MHz</td><td>t2_off ~ +400ns, Z_V_DS</td><td>피크 간격 역수</td></tr>
+<tr><td><strong>zeta_on</strong></td><td>—</td><td>턴온 링잉 구간</td><td>$$\bar{\delta}/\sqrt{4\pi^2+\bar{\delta}^2}$$</td></tr>
+<tr><td><strong>zeta_off</strong></td><td>—</td><td>턴오프 링잉 구간</td><td>$$\bar{\delta}/\sqrt{4\pi^2+\bar{\delta}^2}$$</td></tr>
+<tr><td><strong>Q_rr</strong></td><td>μC</td><td>t_ID_90r ~ t_rr_end, I_D > I_out</td><td>$$\left|\int (I_D - I_\text{out,qrr})\, dt\right|$$</td></tr>
+<tr><td><strong>V_on_drop</strong></td><td>V</td><td>t2_on+500ns ~ t_on_mid</td><td>mean(Z_V_DS)</td></tr>
+<tr><td><strong>V_DS_ref_actual</strong></td><td>V</td><td>t_ton_ref − 500ns ~ t_ton_ref</td><td>mean(Z_V_DS_f)</td></tr>
+</table>
+
+<div class="info ok">
+<strong>참고:</strong> I_out_actual은 results 구조체에 저장되지만 Excel Raw_Results에는 포함되지 않으며, Plot_LUT_Maps의 Y축으로만 사용됨.
+</div>
+</section>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: '$$', right: '$$', display: true},
+      {left: '$', right: '$', display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>
