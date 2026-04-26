@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DPT 자동 분석 코드 상세 설명 (Rev.0)</title>
+<title>DPT 자동 분석 코드 상세 설명 (Rev.1)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 <style>
-:root { 
+:root {
   --bg: #0a0c12;
   --surface: #12151f;
   --surface2: #181c2a;
@@ -73,7 +73,8 @@ tr:nth-child(even) td { background:var(--surface); }
 .flow-arr { color:var(--text-dim); font-size:1.3em; }
  
 .katex { font-size:1.08em; }
-.katex-display { margin:10px 0; overflow-x:auto; overflow-y:hidden; }
+.katex-display { margin:10px 0; overflow-x: auto; overflow-y: hidden; }
+
 </style>
 </head>
 <body>
@@ -100,9 +101,8 @@ tr:nth-child(even) td { background:var(--surface); }
         <li><a href="#s4-6">I_peak_on / V_peak_off — 오버슈트</a></li>
         <li><a href="#s4-7">Q_rr — 역회복 전하량</a></li>
         <li><a href="#s4-8">f_ringing / ζ — 링잉 주파수 및 감쇠비</a></li>
-        <li><a href="#s4-9">V_on_drop — 도통 전압 강하</a></li>
-        <li><a href="#s4-10">I_out_actual — 출력 전류</a></li>
-        <li><a href="#s4-11">Crossing 탐지 함수 구조</a></li>
+        <li><a href="#s4-9">I_out_actual — 출력 전류</a></li>
+        <li><a href="#s4-10">Crossing 탐지 함수 구조</a></li>
       </ol>
     </li>
     <li><a href="#s5">Export_to_Simulink.m — 결과 저장</a></li>
@@ -200,6 +200,7 @@ details.cfg details.sub summary::before { font-size:.58em; }
   <div class="tbody-wrap"><table>
   <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
   <tbody>
+  <tr><td><code>CONFIG.VGS_THRESHOLD</code> <span class="tag tag-config">CONFIG</span></td><td><code>3.9/5.8</code></td><td>데이터시트 기준 V_th [SiC: 3.9V / IGBT: 5.8V]</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
   <tr><td><code>CONFIG.filter_window</code> <span class="tag tag-config">CONFIG</span></td><td><code>5</code></td><td>이동 평균 필터 윈도우 크기 [포인트 수]</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
   <tr><td><code>CONFIG.threshold_low</code> <span class="tag tag-config">CONFIG</span></td><td><code>0.10</code></td><td>10% 임계값 (Rise/Fall, Delay 하한)</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
   <tr><td><code>CONFIG.threshold_high</code> <span class="tag tag-config">CONFIG</span></td><td><code>0.90</code></td><td>90% 임계값 (Rise/Fall, Delay 상한)</td><td class="filecol">Main_DPT_Analysis.m</td></tr>
@@ -265,30 +266,19 @@ details.cfg details.sub summary::before { font-size:.58em; }
     <div class="tbody-wrap"><table>
     <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
     <tbody>
-    <tr><td>I_peak_on 구간 <span class="tag tag-const">CONST</span></td><td><code>2e-6</code> (2 μs)</td><td>t_ton_ref ~ +2μs 구간 max(Z_I_D_f)</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
-    <tr><td>V_peak_off 구간 <span class="tag tag-const">CONST</span></td><td><code>2e-6</code> (2 μs)</td><td>t_toff_ref ~ +2μs 구간 max(Z_V_DS_f)</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td>I_peak_on 구간 <span class="tag tag-const">CONST</span></td><td><code>500e-9</code> (500 ns)</td><td>t_ID_90r ~ +500ns 구간 max(Z_I_D_f)</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
+    <tr><td>V_peak_off 구간 <span class="tag tag-const">CONST</span></td><td><code>500e-9</code> (500 ns)</td><td>t_VDS_90r ~ +500ns 구간 max(Z_V_DS_f)</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
     <tr><td>Q_rr 탐색 구간 <span class="tag tag-const">CONST</span></td><td><code>3e-6</code> (3 μs)</td><td>t_ID_90r ~ +3μs 구간 역회복 전류 탐색</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
     </tbody></table></div>
   </details>
  
-  <!-- 5-4 링잉/V_on_drop -->
+  <!-- 5-4 링잉 -->
   <details class="sub">
-    <summary>Ringing / V_on_drop 관련</summary>
+    <summary>Ringing 관련</summary>
     <div class="tbody-wrap"><table>
     <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
     <tbody>
     <tr><td><code>RING_WINDOW</code> <span class="tag tag-const">CONST</span></td><td><code>400e-9</code> (400 ns)</td><td>링잉 주파수/감쇠비 탐색 구간 (t2_on/t2_off 이후)</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
-    <tr><td><code>T_RINGING_SETTLE</code> <span class="tag tag-const">CONST</span></td><td><code>500e-9</code> (500 ns)</td><td>V_on_drop 측정 시 링잉 소멸 여유 시간</td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
-    </tbody></table></div>
-  </details>
- 
-  <!-- 5-5 예약 -->
-  <details class="sub">
-    <summary>예외: V_threshold</summary>
-    <div class="tbody-wrap"><table>
-    <thead><tr><th>파라미터</th><th>기본값</th><th>설명</th><th>위치</th></tr></thead>
-    <tbody>
-    <tr><td><code>VGS_THRESHOLD</code> <span class="tag tag-const">CONST</span></td><td><code>3.9</code> [V]</td><td>턴온/턴오프 기준 시각을 게이트 전압 절대값 기준으로 설정 시 사용 가능한 변수로, 현재 미사용 (50% 지점 사용 중) <span class="new-tag">사용 가능</span></td><td class="filecol">Extract_Switching_Metrics.m</td></tr>
     </tbody></table></div>
   </details>
  
@@ -369,7 +359,7 @@ details.cfg details.sub summary::before { font-size:.58em; }
 <!-- ===== 4. EXTRACT ===== -->
 <section id="s4">
 <h2>4. Extract_Switching_Metrics.m — 스위칭 지표 추출</h2>
-<p>Z채널 고해상도 파형으로부터 <strong>18가지 스위칭 성능 지표</strong>를 추출하는 핵심 모듈</p>
+<p>Z채널 고해상도 파형으로부터 <strong>15가지 스위칭 성능 지표</strong>를 추출하는 핵심 모듈</p>
 
 <!-- 4.1 -->
 <section id="s4-1">
@@ -378,15 +368,24 @@ details.cfg details.sub summary::before { font-size:.58em; }
 <p>Z채널의 4개 신호(Z_I_D, Z_V_DS, Z_V_GS, Z_I_out)에 <code>movmean(signal, 5)</code> 필터를 적용</p>
 
 <h4>정규화</h4>
-<div class="card">
-  <div class="formula">$$Z_\text{ID,norm} = \frac{Z\_I\_D_f}{I_{DS}}, \qquad Z_\text{VGS,norm} = \frac{Z\_V\_GS_f - \min(Z\_V\_GS_f)}{\max(Z\_V\_GS_f) - \min(Z\_V\_GS_f)}$$</div>
+<p>3단계 과정:</p>
+  <p><strong>Step 1:</strong> t_ton_ref 먼저 탐지</p>
+  <p><strong>Step 2:</strong> t_toff_ref 임시 추정 후 VGS_lo/VGS_hi 재계산</p>
+  <table>
+  <tr><th>기준</th><th>이전</th><th>현재</th></tr>
+  <tr><td><strong>VGS_lo (min)</strong></td><td><code>min(Z_V_GS_f)</code></td><td>데이터 시작 후 <strong>100ns 구간 평균</strong><br><code>mean(Z_V_GS_f(t_zoom ≤ t_zoom(1)+100ns))</code></td></tr>
+  <tr><td><strong>VGS_hi (max)</strong></td><td><code>max(Z_V_GS_f)</code></td><td><strong>t_toff_ref 직전 200ns 구간 평균</strong><br><code>mean(Z_V_GS_f(t ∈ [t_toff-200ns, t_toff)))</code></td></tr>
+  </table>
+  <p><strong>Step 3:</strong> 최종 정규화:</p>
+  <div class="formula">$$Z_\text{VGS,norm} = \frac{Z\_V\_GS_f - V_{GS,lo}}{V_{GS,hi} - V_{GS,lo}}$$</div>
+  <p>→ 스위칭 과도 구간의 링잉/오버슈트가 정규화 기준이 되는 min/max값에 영향을 주지 않게 됨.</p>
 </div>
 
 <h4>t_ton_ref — 턴온 기준 시각</h4>
-<p>Z_VGS_norm이 50% 지점을 처음으로 상향 통과하는 시점(선형 보간)</p>
+<p>Z_V_GS_f가 VGS_THRESHOLD를 처음으로 상향 통과하는 시점(선형 보간)</p>
 
 <h4>t_toff_ref — 턴오프 기준 시각</h4>
-<p>t_on_mid 이후의 Z_VGS_norm에서 50% 지점을 처음으로 하향 통과하는 시점</p>
+<p>t_on_mid 이후의 Z_V_GS_f가 VGS_THRESHOLD를 처음으로 하향 통과하는 시점</p>
 
 <h4>V_DS_ref — 실측 버스 전압</h4>
 <p>턴온 직전 500ns 구간의 Z_V_DS_f 평균. 이후 V_DS 정규화 및 에너지 임계값(5%)이 갱신됨.</p>
@@ -457,10 +456,8 @@ details.cfg details.sub summary::before { font-size:.58em; }
 
 <div class="card">
   <h4>t_d_on (턴-온 딜레이)</h4>
-  <p>: 게이트 전압이 10% 상승하는 시점부터 드레인 전류가 10% 상승하는 시점까지의 시간 차이</p>
-  <div class="formula">
-    $$t_{d,\text{on}} = t_\text{ID,10r} - t_\text{VGS,10r}$$
-  </div>
+  <p>: 게이트 전압이 10% 상승하는 시점부터 드레인 전류가 10% 상승하는 시점까지의 시간 차 절대값</p>
+  <div class="formula">$$t_{d,\text{on}} = \left|t_\text{ID,10r} - t_\text{VGS,10r}\right|$$</div>
   <table>
   <tr><th>시점</th><th>정의</th><th>탐색 시작점</th></tr>
   <tr><td>t_VGS_10r</td><td>Z_VGS_norm이 10%를 통과</td><td>t_ton_ref − 500ns</td></tr>
@@ -470,16 +467,16 @@ details.cfg details.sub summary::before { font-size:.58em; }
 
 <div class="card">
   <h4>t_d_off (턴-오프 딜레이)</h4>
-  <p>: 게이트 전압이 90%에서 하강하는 시점부터 드레인-소스 전압이 10% 상승하는 시점까지의 시간 차이</p>
-  <div class="formula">
-    $$t_{d,\text{off}} = t_\text{VDS,10r} - t_\text{VGS,90f}$$
-  </div>
+  <p>: 게이트 전압이 90%에서 하강하는 시점부터 드레인-소스 전압이 10% 상승하는 시점까지의 시간 차 절대값</p>
+  <div class="formula">$$t_{d,\text{off}} = \left|t_\text{VDS,10r} - t_\text{VGS,90f}\right|$$</div>
   <p>t_VGS_90f는 <code>find_crossing_bwd</code>(역방향 탐색)로 t_toff_ref + 500ns에서 <strong>뒤에서부터</strong> 탐색</p>
   <table>
   <tr><th>시점</th><th>정의</th><th>탐색 시작점</th></tr>
   <tr><td>t_VGS_90f</td><td>Z_VGS_norm이 90%를 통과</td><td>t_toff_ref + 500ns</td></tr>
   <tr><td>t_VDS_10r</td><td>Z_VDS_norm이 10%를 통과 (V_DS_ref 기준)</td><td>t_ton_ref − 500ns</td></tr>
   </table>
+  <p><strong>절대값 이유:</strong> <br>SiC와 IGBT의 턴오프 시 V_CE(V_DS)가 10% 상승하는 시점과 V_GE(V_GS)가 90% 하강하는 시점의 순서가 반대
+    <br> → 단순 뺄셈 시 음수가 되는 경우 발생 → 절대값으로 항상 양수 보장</p>
 </div>
 </section>
 
@@ -526,18 +523,14 @@ details.cfg details.sub summary::before { font-size:.58em; }
 <h3>4.6 I_peak_on / V_peak_off — 피크값</h3>
 <div class="card">
   <h4>I_peak_on — 턴온 전류 오버슈트</h4>
-  <p>t_ton_ref 이후 2μs 이내 구간에서 Z_I_D_f의 최대값. 역회복 전류(reverse recovery current)에 의한 전류 스파이크를 포착</p>
-  <div class="formula">
-    $$I_\text{peak,on} = \max\!\left(Z\_I\_D_f\big|_{t \in [t_\text{ton,ref},\; t_\text{ton,ref}+2\mu s]}\right)$$
-  </div>
+  <p>t_ID_90r 이후 500ns 이내 구간에서 Z_I_D_f의 최대값. 역회복 전류(reverse recovery current)에 의한 전류 스파이크를 포착</p>
+  <div class="formula">$$I_\text{peak,on} = \max\!\left(Z\_I\_D_f\big|_{t \in [t_\text{ID,90r},\; t_\text{ID,90r}+500\text{ns}]}\right)$$</div>
 </div>
 
 <div class="card">
   <h4>V_peak_off — 턴오프 전압 오버슈트</h4>
-  <p>t_toff_ref 이후 2μs 이내 구간에서 Z_V_DS_f의 최대값. 기생 인덕턴스에 의한 전압 스파이크를 포착</p>
-  <div class="formula">
-    $$V_\text{peak,off} = \max\!\left(Z\_V\_DS_f\big|_{t \in [t_\text{toff,ref},\; t_\text{toff,ref}+2\mu s]}\right)$$
-  </div>
+  <p>t_VDS_90r 이후 500ns 이내 구간에서 Z_V_DS_f의 최대값. 기생 인덕턴스에 의한 전압 스파이크를 포착</p>
+  <div class="formula">$$V_\text{peak,off} = \max\!\left(Z\_V\_DS_f\big|_{t \in [t_\text{VDS,90r},\; t_\text{VDS,90r}+500\text{ns}]}\right)$$</div>
 
   <h4>V_peak_off_pct — 오버슈트 비율</h4>
   <div class="formula">
@@ -562,6 +555,12 @@ details.cfg details.sub summary::before { font-size:.58em; }
   <div class="formula">$$Q_{rr} = \left|\int_{t_\text{ID,90r}}^{t_\text{rr,end}} \bigl(I_D(t) - I_\text{out,qrr}\bigr)\, dt\right|, \quad I_D > I_\text{out,qrr}$$</div>
 
   <p>원본(비필터) 신호 Z_I_D를 사용하며, I_out_qrr는 필터된 Z_I_out_f에서 추출. 결과 단위는 [C]이고, 출력 시 μC로 환산됨.</p>
+
+  <h4>t_rr_end 설정</h4>
+  <p>수식:</p>
+  <div class="formula">$$t_\text{rr,end}: \quad I_D(t) \leq I_\text{out,qrr} + Q_\text{RR\_MARGIN}$$</div>
+  <p>IGBT의 경우, 턴온 시 I_C가 I_out에 점근적으로 수렴하는 형태를 보여 <code>t_rr_end</code>가 인식되지 않는 문제 발생
+    <br>→ <code>CONFIG.device_type = Si-IGBT</code>인 경우 <code>I_D ≤ I_out_qrr + 5A</code>에서 <code>t_rr_end</code>가 인식되도록 설정</p>
 </div>
 </section>
 
@@ -601,26 +600,8 @@ details.cfg details.sub summary::before { font-size:.58em; }
 </div>
 </section>
 
-<!-- 4.9 V_on_drop -->
+<!-- 4.9 I_out_actual -->
 <section id="s4-9">
-<h3>4.9 V_on_drop — 도통 전압 강하</h3>
-<div class="metric-card">
-  <p>디바이스가 완전히 켜진 상태에서의 드레인-소스(또는 콜렉터-이미터) 전압 강하로, 디바이스의 온 저항(R_DS(on)) 특성을 나타냄.</p>
-
-  <h4>측정 구간</h4>
-  <p>E_on 적분 종료 시점(t2_on) 이후 링잉 소멸 여유 시간(500ns)을 두고, t_on_mid(ON 상태 중앙)까지의 구간에서 Z_V_DS의 평균을 취함.</p>
-  <div class="formula">$$V_\text{on,drop} = \text{mean}\!\left(Z\_V\_DS\big|_{t \in [t_{2,\text{on}}+500\text{ns},\; t_\text{on\_mid}]}\right)$$</div>
-  <p>이 구간이 너무 짧으면(데이터 10포인트 미만), t2_on ~ t_on_mid 전체 구간을 사용</p>
-
-  <div class="info-box green">
-    <strong>물리적 의미:</strong> $V_\text{on,drop} \approx I_{DS} \times R_{DS(\text{on})}$ 로, 도통 시 전압 강하를 의미
-  </div>
-  <p>→ 전류값에 따라 증가하는 경향을 보여야 하지만, 현재 전압에 비례하는 특성을 보이며 <strong>전체적으로 매우 큰 값</strong>(이론값의 최대 50배)이 측정되고 있음. <span class="changed-tag">검토 필요</span></p>
-</div>
-</section>
-
-<!-- 4.10 I_out_actual -->
-<section id="s4-10">
 <h3>4.10 I_out_actual — 실측 출력 전류</h3>
 <div class="card">
   <p>턴오프 직전 200ns 구간의 Z_I_out_f 평균값. Plot_LUT_Maps에서 <strong>Y축(세로축)</strong>으로 사용됨.</p>
@@ -629,8 +610,8 @@ details.cfg details.sub summary::before { font-size:.58em; }
 </div>
 </section>
 
-<!-- 4.11 Crossing functions -->
-<section id="s4-11">
+<!-- 4.10 Crossing functions -->
+<section id="s4-10">
 <h3>4.11 Crossing 탐지 함수 구조 </h3>
 <div class="info">
 '교차(crossing)' 방식이 아닌,'도달(threshold reach)' 방식을 채택함으로써 신호가 이미 임계값 위/아래에 있는 경우에도 정상 탐지되도록 설정
@@ -695,17 +676,17 @@ details.cfg details.sub summary::before { font-size:.58em; }
 <!-- ===== 7. SUMMARY ===== -->
 <section id="s7">
 <h2>7. 지표 종합 요약 테이블</h2>
-<p>SiC_Fast_Designed_Metrics.xlsx의 Raw_Results 시트에 기록되는 18개 지표</p>
+<p>SiC_Fast_Designed_Metrics.xlsx의 Raw_Results 시트에 기록되는 17개 지표</p>
 
 <table>
 <tr><th>지표</th><th>단위</th><th>구간 / 기준</th><th>계산 방식</th></tr>
 <tr><td><strong>E_on</strong></td><td>mJ</td><td>I_D ≥ 5%I_DS → V_DS ≤ 5%V_ref</td><td>$$\left|\int V_{DS} \cdot I_D\, dt\right|$$</td></tr>
 <tr><td><strong>E_off</strong></td><td>mJ</td><td>V_DS ≥ 5%V_ref → I_D ≤ 5%I_DS</td><td>$$\left|\int V_{DS} \cdot I_D\, dt\right|$$</td></tr>
-<tr><td><strong>I_peak_on</strong></td><td>A</td><td>t_ton_ref ~ +2μs</td><td>max(Z_I_D_f)</td></tr>
-<tr><td><strong>V_peak_off</strong></td><td>V</td><td>t_toff_ref ~ +2μs</td><td>max(Z_V_DS_f)</td></tr>
+<tr><td><strong>I_peak_on</strong></td><td>A</td><td>t_ID_90r ~ +500ns</td><td>max(Z_I_D_f)</td></tr>
+<tr><td><strong>V_peak_off</strong></td><td>V</td><td>t_VDS_90r ~ +500ns</td><td>max(Z_V_DS_f)</td></tr>
 <tr><td><strong>V_peak_off_pct</strong></td><td>%</td><td>—</td><td>$$(V_\text{pk}/V_\text{ref} - 1) \times 100$$</td></tr>
-<tr><td><strong>t_d_on</strong></td><td>ns</td><td>V_GS 10%↑ → I_D 10%↑</td><td>$$t_\text{ID,10r} - t_\text{VGS,10r}$$</td></tr>
-<tr><td><strong>t_d_off</strong></td><td>ns</td><td>V_GS 90%↓ → V_DS 10%↑</td><td>$$t_\text{VDS,10r} - t_\text{VGS,90f}$$</td></tr>
+<tr><td><strong>t_d_on</strong></td><td>ns</td><td>V_GS 10%↑ → I_D 10%↑</td><td>$$\left| t_\text{ID,10r} - t_\text{VGS,10r} \right|$$</td></tr>
+<tr><td><strong>t_d_off</strong></td><td>ns</td><td>V_GS 90%↓ → V_DS 10%↑</td><td>$$\left| t_\text{VDS,10r} - t_\text{VGS,90f} \right|$$</td></tr>
 <tr><td><strong>t_r_I</strong></td><td>ns</td><td>턴온: I_D 10→90% (I_DS 기준)</td><td>$$t_\text{ID,90r} - t_\text{ID,10r}$$</td></tr>
 <tr><td><strong>t_f_V</strong></td><td>ns</td><td>턴온: V_DS 90→10% (V_ref 기준)</td><td>$$t_\text{VDS,10f} - t_\text{VDS,90f}$$</td></tr>
 <tr><td><strong>t_r_V</strong></td><td>ns</td><td>턴오프: V_DS 10→90% (V_ref 기준)</td><td>$$t_\text{VDS,90r} - t_\text{VDS,10r}$$</td></tr>
@@ -715,7 +696,6 @@ details.cfg details.sub summary::before { font-size:.58em; }
 <tr><td><strong>zeta_on</strong></td><td>—</td><td>턴온 링잉 구간</td><td>$$\bar{\delta}/\sqrt{4\pi^2+\bar{\delta}^2}$$</td></tr>
 <tr><td><strong>zeta_off</strong></td><td>—</td><td>턴오프 링잉 구간</td><td>$$\bar{\delta}/\sqrt{4\pi^2+\bar{\delta}^2}$$</td></tr>
 <tr><td><strong>Q_rr</strong></td><td>μC</td><td>t_ID_90r ~ t_rr_end, I_D > I_out</td><td>$$\left|\int (I_D - I_\text{out,qrr})\, dt\right|$$</td></tr>
-<tr><td><strong>V_on_drop</strong></td><td>V</td><td>t2_on+500ns ~ t_on_mid</td><td>mean(Z_V_DS)</td></tr>
 <tr><td><strong>V_DS_ref_actual</strong></td><td>V</td><td>t_ton_ref − 500ns ~ t_ton_ref</td><td>mean(Z_V_DS_f)</td></tr>
 </table>
 
